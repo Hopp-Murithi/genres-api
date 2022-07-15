@@ -12,9 +12,15 @@ const movies = [
 ]
 
 //get genres
+
+/**
+*Returns Lits of movies
+*/
 movie.get('/vidly/genres', (req, res) => {
     res.send(movies)
 });
+
+// Remove the half colon and use full colons instead when passing params
 movie.get('/vidly/genres/;id', (req, res) => {
     const genre = movies.find(m => m.id === parseInt(req.params.id));
     if (!genre) return res.status(404).send('The movie with the given ID was not found.');
@@ -37,10 +43,14 @@ movie.post('/vidly/genres', (req, res) => {
     res.send(genre);
 
 });
+
 //update genre
 movie.put('/vidly/genres/:id', (req, res) => {
     const genre = movies.find(m => m.id === parseInt(req.params.id));
-    if (!genre) return res.status(404).send('The movie with the given ID was not found.');
+//Use string interpolation to give precice error messages
+ //Also Read On Function Comments
+    
+    if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
 
     const { error } = validateMovie(genre);
@@ -56,7 +66,7 @@ movie.put('/vidly/genres/:id', (req, res) => {
 //delete genre
 movie.delete('/vidly/genres/:id', (req, res) => {
     const genre = movies.find(m => m.id === parseInt(req.params.id));
-    if (!genre) return res.status(404).send('The movie with the given ID was not found.');
+    if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
     const index = movies.indexOf(genre);
     movies.splice(index, 1);
@@ -66,6 +76,7 @@ movie.delete('/vidly/genres/:id', (req, res) => {
 
 
 const port = process.env.PORT || 3000;
+
 movie.listen(3000, () => {
     console.log(`Listening on port ${port}...`)
 });
