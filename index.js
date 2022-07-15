@@ -22,7 +22,7 @@ movie.get('/vidly/genres', (req, res) => {
 
 movie.get('/vidly/genres/:id', (req, res) => {
     const genre = movies.find(m => m.id === parseInt(req.params.id));
-    if (!genre) return res.status(404).send('The movie with the given ID was not found.');
+    if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
     res.send(genre);
 
 });
