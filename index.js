@@ -11,24 +11,25 @@ const movies = [
     { id: 4, genre: 'movie4' },
 ]
 
-//get genres
 
 /**
-*Returns Lits of movies
-*/
+ *Returns Lists of movies
+ */
 movie.get('/vidly/genres', (req, res) => {
     res.send(movies)
 });
 
-// Remove the half colon and use full colons instead when passing params
-movie.get('/vidly/genres/;id', (req, res) => {
+
+movie.get('/vidly/genres/:id', (req, res) => {
     const genre = movies.find(m => m.id === parseInt(req.params.id));
     if (!genre) return res.status(404).send('The movie with the given ID was not found.');
     res.send(genre);
 
 });
 
-//create genre
+/** 
+ * Adds a new genre
+ **/
 movie.post('/vidly/genres', (req, res) => {
     const genre = {
         id: movies.length + 1,
@@ -47,9 +48,8 @@ movie.post('/vidly/genres', (req, res) => {
 //update genre
 movie.put('/vidly/genres/:id', (req, res) => {
     const genre = movies.find(m => m.id === parseInt(req.params.id));
-//Use string interpolation to give precice error messages
- //Also Read On Function Comments
-    
+
+
     if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
 
