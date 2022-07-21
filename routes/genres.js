@@ -1,69 +1,79 @@
 const express = require('express')
 const router = express.Router()
+const mongoose = require('mongoose')
 
 
-const movies = [
-    { id: 1, genre: 'movie1' },
-    { id: 2, genre: 'movie2' },
-    { id: 3, genre: 'movie3' },
-    { id: 4, genre: 'movie4' },
-]
+const Genre = mongoose.model('genre', new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        minlength: 3,
+        maxlength: 30
+    }
+
+}))
+
+
 
 
 /**
- *Returns Lists of movies
+ * @param req - requests movies from the database
+ * @returns - returns the movies to the client
+ * 
  */
-router.get('/', (req, res) => {
+router.get('/', async(req, res) => {
+    const movies = await Genre.find()
     res.send(movies)
 });
 
 
-router.get('/:id', (req, res) => {
-    const genre = movies.find(m => m.id === parseInt(req.params.id));
+router.get('/:id', async(req, res) => {
+    const genre = await Genre.findById(req.params.id);
     if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
     res.send(genre);
 
 });
 
 /** 
- * Adds a new genre
+ * @param req - requests a new movie to be added to the database
+ * @returns - returns the new movie to the client
  **/
-router.post('/', (req, res) => {
-    const genre = {
-        id: movies.length + 1,
-        genre: req.body.genre
-    };
+router.post('/', async(req, res) => {
     const { error } = validateMovie(genre);
     if (error) {
         return res.status(400).send(error.details[0].message);
     };
 
-    movies.push(genre);
+    let genre = new Genre({ genre: req.body.genre });
+    genre = await genre.save();
     res.send(genre);
 
 });
 
-//update genre
-router.put('/:id', (req, res) => {
-    const genre = movies.find(m => m.id === parseInt(req.params.id));
-
-
+/**
+ * @param req - requests a movie to be updated in the database
+ * @returns - returns the updated movie to the client
+ */
+router.put('/:id', async(req, res) => {
+    const { error } = validateMovie(genre);
+    if (error) {
+        return res.status(400).send(error.details[0].message);
+    };
+    const genre = await genre.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true });
     if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
-
-    const { error } = validateMovie(genre);
-    if (error) {
-        return res.status(400).send(error.details[0].message);
-    };
-
-    genre.genre = req.body.genre;
+    genre.name = req.body.name;
     res.send(genre);
 
 });
 
-//delete genre
-router.delete('/:id', (req, res) => {
-    const genre = movies.find(m => m.id === parseInt(req.params.id));
+/**
+ * @param req - requests a movie to be deleted from the database
+ *  @returns - returns the deleted movie to the client
+ */
+router.delete('/:id', async(req, res) => {
+    const genre = await genre.findByIdAndRemove({ _id: req.params.id });
+
     if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
     const index = movies.indexOf(genre);
@@ -71,6 +81,7 @@ router.delete('/:id', (req, res) => {
     res.send(genre);
 
 });
+
 
 function validateMovie(movie) {
     const schema = Joi.object({
