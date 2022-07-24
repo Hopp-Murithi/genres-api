@@ -5,24 +5,18 @@ const mongoose = require('mongoose')
 
 
 const Genre = mongoose.model('genre', new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-        minlength: 3,
-        maxlength: 30
-    }
+        genre: {
+            type: String,
+            minlength: 3,
+            maxlength: 30
+        }
 
-}))
-
-
-
-
-/**
- * @param req - requests movies from the database
- * @returns - returns the movies to the client
- * 
- */
-router.get('/', async(req, res) => {
+    }))
+    /**
+     * @param req - requests genre from the database
+     * @returns - returns the genre to the client
+     */
+router.get('', async(req, res) => {
     const movies = await Genre.find()
     res.send(movies)
 });
@@ -36,16 +30,17 @@ router.get('/:id', async(req, res) => {
 });
 
 /** 
- * @param req - requests a new movie to be added to the database
- * @returns - returns the new movie to the client
+ * @param req - requests a new genre to be added to the database
+ * @returns - returns the new genre to the client
  **/
-router.post('/', async(req, res) => {
-    const { error } = validateMovie(genre);
+router.post('', async(req, res) => {
+    let genre = new Genre({ genre: req.body.genre });
+    const { error } = validateGenre(req.body);
     if (error) {
         return res.status(400).send(error.details[0].message);
     };
 
-    let genre = new Genre({ genre: req.body.genre });
+
     genre = await genre.save();
     res.send(genre);
 
@@ -56,11 +51,12 @@ router.post('/', async(req, res) => {
  * @returns - returns the updated movie to the client
  */
 router.put('/:id', async(req, res) => {
-    const { error } = validateMovie(genre);
+    const { error } = validateGenre(genre);
+    const genre = await Genre.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true });
     if (error) {
         return res.status(400).send(error.details[0].message);
     };
-    const genre = await genre.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true });
+
     if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
     genre.name = req.body.name;
@@ -73,23 +69,22 @@ router.put('/:id', async(req, res) => {
  *  @returns - returns the deleted movie to the client
  */
 router.delete('/:id', async(req, res) => {
-    const genre = await genre.findByIdAndRemove({ _id: req.params.id });
+    const genre = await Genre.findByIdAndRemove(req.params.id);
 
     if (!genre) return res.status(404).send(`The movie with ID ${req.params.id} was not found.`);
 
-    const index = movies.indexOf(genre);
-    movies.splice(index, 1);
+    const index = genre.indexOf(genre);
+    genre.splice(index, 1);
     res.send(genre);
 
 });
 
 
-function validateMovie(movie) {
+function validateGenre(genre) {
     const schema = Joi.object({
-        id: Joi.optional(),
         genre: Joi.string().min(3).required()
     })
-    return schema.validate(movie);
+    return schema.validate(genre);
 
 };
 
